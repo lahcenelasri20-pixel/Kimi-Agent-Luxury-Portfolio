@@ -53,6 +53,9 @@ export default function ContactSection() {
     setErrorMessage('');
 
     try {
+      console.log('Submitting to:', FORMSPREE_ENDPOINT);
+      console.log('Form data:', formData);
+
       const response = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -67,18 +70,27 @@ export default function ContactSection() {
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
       if (response.ok) {
         setStatus('success');
         setFormData({ name: '', email: '', subject: '', message: '' });
         setTimeout(() => setStatus('idle'), 5000);
       } else {
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
+        console.log('Error response:', data);
         setStatus('error');
         setErrorMessage(data.error || 'Something went wrong. Please try again.');
       }
-    } catch {
-      setStatus('error');
-      setErrorMessage('Network error. Please check your connection and try again.');
+    } catch (err) {
+      console.error('Submit error:', err);
+      // Fallback to mailto if fetch fails
+      const subject = encodeURIComponent(formData.subject || 'Website Inquiry');
+      const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
+      window.location.href = `mailto:studio@elenavoss.art?subject=${subject}&body=${body}`;
+      setStatus('success');
+      setTimeout(() => setStatus('idle'), 5000);
     }
   };
 
