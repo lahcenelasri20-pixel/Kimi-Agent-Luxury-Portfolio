@@ -76,7 +76,7 @@ export default function TestimonialsSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-32 lg:py-44 px-12 lg:px-20 bg-charcoal overflow-hidden"
+      className="relative py-20 lg:py-24 px-12 lg:px-20 bg-charcoal overflow-hidden"
     >
       {/* Subtle pattern */}
       <div className="absolute inset-0 opacity-5">

@@ -70,7 +70,7 @@ export default function ArtworkDetailSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-32 lg:py-44 bg-charcoal overflow-hidden"
+      className="relative py-20 lg:py-24 bg-charcoal overflow-hidden"
     >
       {/* Subtle pattern */}
       <div className="absolute inset-0 opacity-[0.03]">

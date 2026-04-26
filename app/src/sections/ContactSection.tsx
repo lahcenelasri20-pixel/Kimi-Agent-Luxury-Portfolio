@@ -4,12 +4,16 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mpqknjon';
+
 export default function ContactSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const formElementRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -38,20 +42,51 @@ export default function ContactSection() {
     return () => ctx.revert();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 4000);
+    setStatus('submitting');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject || 'Website Inquiry',
+          message: formData.message,
+        }),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+        setTimeout(() => setStatus('idle'), 5000);
+      } else {
+        const data = await response.json();
+        setStatus('error');
+        setErrorMessage(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setStatus('error');
+      setErrorMessage('Network error. Please check your connection and try again.');
+    }
   };
 
   return (
     <section
       ref={sectionRef}
       id="contact"
-      className="relative py-32 lg:py-44 px-12 lg:px-20 bg-wall"
+      className="relative py-20 lg:py-24 px-12 lg:px-20 bg-wall"
     >
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -119,10 +154,10 @@ export default function ContactSection() {
 
           {/* Right: Form */}
           <div ref={formRef} className="lg:col-span-3 opacity-0">
-            {submitted ? (
+            {status === 'success' ? (
               <div className="bg-charcoal/5 p-12 text-center">
                 <div className="mb-4">
-                  <svg className="w-10 h-10 mx-auto text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-12 h-12 mx-auto text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -132,30 +167,44 @@ export default function ContactSection() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-8">
+              <form
+                ref={formElementRef}
+                onSubmit={handleSubmit}
+                className="space-y-8"
+              >
+                {status === 'error' && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 text-sm">
+                    {errorMessage}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
+                    <label htmlFor="name" className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
                       Name
                     </label>
                     <input
                       type="text"
+                      id="name"
+                      name="name"
                       required
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={handleChange}
                       className="w-full bg-transparent border-b border-charcoal/20 py-3 font-sans text-sm text-charcoal placeholder:text-charcoal/30 focus:outline-none focus:border-gold transition-colors duration-300"
                       placeholder="Your name"
                     />
                   </div>
                   <div>
-                    <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
+                    <label htmlFor="email" className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
                       Email
                     </label>
                     <input
                       type="email"
+                      id="email"
+                      name="email"
                       required
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={handleChange}
                       className="w-full bg-transparent border-b border-charcoal/20 py-3 font-sans text-sm text-charcoal placeholder:text-charcoal/30 focus:outline-none focus:border-gold transition-colors duration-300"
                       placeholder="your@email.com"
                     />
@@ -163,32 +212,36 @@ export default function ContactSection() {
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
+                  <label htmlFor="subject" className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
                     Subject
                   </label>
                   <select
+                    id="subject"
+                    name="subject"
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    onChange={handleChange}
                     className="w-full bg-transparent border-b border-charcoal/20 py-3 font-sans text-sm text-charcoal focus:outline-none focus:border-gold transition-colors duration-300 cursor-pointer"
                   >
                     <option value="">Select an option</option>
-                    <option value="inquiry">General Inquiry</option>
-                    <option value="available">Available Works</option>
-                    <option value="commission">Commission Request</option>
-                    <option value="studio">Studio Visit</option>
-                    <option value="press">Press & Media</option>
+                    <option value="General Inquiry">General Inquiry</option>
+                    <option value="Available Works">Available Works</option>
+                    <option value="Commission Request">Commission Request</option>
+                    <option value="Studio Visit">Studio Visit</option>
+                    <option value="Press & Media">Press & Media</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
+                  <label htmlFor="message" className="block font-sans text-[10px] uppercase tracking-[0.2em] text-charcoal/50 mb-3">
                     Message
                   </label>
                   <textarea
+                    id="message"
+                    name="message"
                     required
                     rows={5}
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={handleChange}
                     className="w-full bg-transparent border-b border-charcoal/20 py-3 font-sans text-sm text-charcoal placeholder:text-charcoal/30 focus:outline-none focus:border-gold transition-colors duration-300 resize-none"
                     placeholder="Tell me about your interest..."
                   />
@@ -196,18 +249,27 @@ export default function ContactSection() {
 
                 <button
                   type="submit"
-                  className="group inline-flex items-center gap-3 font-sans text-[11px] uppercase tracking-[0.2em] text-wall bg-charcoal px-10 py-4 hover:bg-gold transition-colors duration-500"
+                  disabled={status === 'submitting'}
+                  className="group inline-flex items-center gap-3 font-sans text-[11px] uppercase tracking-[0.2em] text-wall bg-charcoal px-10 py-4 hover:bg-gold transition-colors duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span>Send Message</span>
-                  <svg
-                    className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-                  </svg>
+                  {status === 'submitting' ? (
+                    <>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Message</span>
+                      <svg
+                        className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                      </svg>
+                    </>
+                  )}
                 </button>
               </form>
             )}

@@ -85,7 +85,7 @@ export default function FeaturedCollectionsSection() {
     <section
       ref={sectionRef}
       id="collections"
-      className="relative py-32 lg:py-44 px-12 lg:px-20 bg-wall"
+      className="relative py-20 lg:py-24 px-12 lg:px-20 bg-wall"
     >
       {/* Section header */}
       <div ref={headerRef} className="mb-20 max-w-7xl mx-auto opacity-0">

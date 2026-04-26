@@ -1,23 +1,62 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function Navigation() {
-  const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isAtTop, setIsAtTop] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 100);
+      if (!ticking.current) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const scrollingDown = currentScrollY > lastScrollY.current;
+          const atTop = currentScrollY < 100;
+
+          if (atTop) {
+            setIsAtTop(true);
+            setIsVisible(true);
+          } else {
+            setIsAtTop(false);
+            if (scrollingDown && currentScrollY > 100) {
+              setIsVisible(false);
+              setMenuOpen(false);
+            } else {
+              setIsVisible(true);
+            }
+          }
+
+          lastScrollY.current = currentScrollY;
+          ticking.current = false;
+        });
+        ticking.current = true;
+      }
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
-      setMenuOpen(false);
     }
+    setMenuOpen(false);
   };
 
   const navLinks = [
@@ -31,17 +70,23 @@ export default function Navigation() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-700 ${
-          scrolled
-            ? 'py-5 bg-wall/95 backdrop-blur-md'
-            : 'py-8 bg-transparent'
+        className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-out ${
+          isVisible
+            ? 'translate-y-0 opacity-100'
+            : '-translate-y-full opacity-0'
+        } ${
+          isAtTop
+            ? 'py-6 bg-transparent'
+            : 'py-4 bg-wall/85 backdrop-blur-lg shadow-sm'
         }`}
       >
         <div className="flex items-center justify-between px-12 lg:px-20">
           {/* Logo */}
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="font-serif text-xl tracking-[0.15em] text-charcoal hover:text-gold transition-colors duration-500"
+            className={`font-serif text-xl tracking-[0.15em] transition-colors duration-500 ${
+              isAtTop ? 'text-wall' : 'text-charcoal'
+            } hover:text-gold`}
           >
             Elena Voss
           </button>
@@ -52,7 +97,9 @@ export default function Navigation() {
               <button
                 key={link.id}
                 onClick={() => scrollTo(link.id)}
-                className="font-sans text-[11px] uppercase tracking-[0.2em] text-charcoal/70 hover:text-gold transition-colors duration-300"
+                className={`font-sans text-[11px] uppercase tracking-[0.2em] transition-colors duration-300 ${
+                  isAtTop ? 'text-wall/80 hover:text-gold' : 'text-charcoal/70 hover:text-gold'
+                }`}
               >
                 {link.label}
               </button>
@@ -62,20 +109,22 @@ export default function Navigation() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="lg:hidden flex flex-col gap-1.5 p-2"
+            className={`lg:hidden flex flex-col justify-center gap-1.5 p-2 w-8 h-8 ${
+              isAtTop ? 'text-wall' : 'text-charcoal'
+            }`}
           >
             <span
-              className={`w-6 h-px bg-charcoal transition-all duration-300 ${
+              className={`block h-px bg-current transition-all duration-300 ${
                 menuOpen ? 'rotate-45 translate-y-2' : ''
               }`}
             />
             <span
-              className={`w-6 h-px bg-charcoal transition-all duration-300 ${
+              className={`block h-px bg-current transition-all duration-300 ${
                 menuOpen ? 'opacity-0' : ''
               }`}
             />
             <span
-              className={`w-6 h-px bg-charcoal transition-all duration-300 ${
+              className={`block h-px bg-current transition-all duration-300 ${
                 menuOpen ? '-rotate-45 -translate-y-2' : ''
               }`}
             />
@@ -86,10 +135,10 @@ export default function Navigation() {
       {/* Mobile Menu Overlay */}
       <div
         className={`fixed inset-0 z-[90] bg-wall transition-all duration-500 lg:hidden ${
-          menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          menuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
         }`}
       >
-        <div className="flex flex-col items-center justify-center h-full gap-8">
+        <div className="flex flex-col items-center justify-center h-full pt-20 gap-8">
           {navLinks.map((link, i) => (
             <button
               key={link.id}
@@ -104,7 +153,13 @@ export default function Navigation() {
               {link.label}
             </button>
           ))}
-          <div className="mt-8 pt-8 border-t border-charcoal/10">
+          <div
+            className="mt-8 pt-8 border-t border-charcoal/10"
+            style={{
+              transitionDelay: menuOpen ? '250ms' : '0ms',
+              opacity: menuOpen ? 1 : 0,
+            }}
+          >
             <button
               onClick={() => scrollTo('contact')}
               className="font-sans text-[11px] uppercase tracking-[0.25em] text-gold border-b border-gold pb-0.5"
