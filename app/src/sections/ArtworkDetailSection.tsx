@@ -83,7 +83,7 @@ export default function ArtworkDetailSection() {
         />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 px-12 lg:px-20 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 px-5 lg:px-20 items-center">
         {/* Artwork image */}
         <div ref={imageRef} className="relative">
           {/* Frame effect */}

@@ -102,7 +102,7 @@ export default function HeroSection() {
       />
 
       {/* Content */}
-      <div ref={contentRef} className="relative z-10 h-full flex flex-col justify-end pb-24 px-12 lg:px-20">
+      <div ref={contentRef} className="relative z-10 h-full flex flex-col justify-end pb-24 px-5 lg:px-20">
         {/* Eyebrow */}
         <p
           className="font-sans text-[11px] uppercase tracking-[0.3em] text-wall/80 mb-6"
