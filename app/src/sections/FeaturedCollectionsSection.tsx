@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -6,24 +7,28 @@ gsap.registerPlugin(ScrollTrigger);
 
 const collections = [
   {
+    id: 'abstract',
     title: 'Abstract',
     image: '/art/collection-abstract.jpg',
     count: 24,
     description: 'Bold gestures, layered textures, and the dialogue between color and form.',
   },
   {
+    id: 'nature',
     title: 'Nature',
     image: '/art/collection-nature.jpg',
     count: 18,
     description: 'Landscapes and organic forms translated through memory and observation.',
   },
   {
+    id: 'portraits',
     title: 'Portraits',
     image: '/art/collection-portraits.jpg',
     count: 12,
     description: 'The human presence rendered in quiet dignity and emotional depth.',
   },
   {
+    id: 'limited-editions',
     title: 'Limited Editions',
     image: '/art/collection-limited.jpg',
     count: 8,
@@ -100,10 +105,11 @@ export default function FeaturedCollectionsSection() {
       {/* Collections grid */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {collections.map((collection, index) => (
-          <div
-            key={collection.title}
+          <Link
+            key={collection.id}
+            to={`/collections/${collection.id}`}
             ref={(el) => { cardsRef.current[index] = el; }}
-            className="group cursor-pointer opacity-0"
+            className="group cursor-pointer opacity-0 block"
           >
             {/* Image container */}
             <div className="relative overflow-hidden mb-6 aspect-[3/4]">
@@ -136,7 +142,7 @@ export default function FeaturedCollectionsSection() {
                 {collection.description}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
