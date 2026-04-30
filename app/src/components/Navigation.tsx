@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 
 export default function Navigation() {
   const [isVisible, setIsVisible] = useState(true);
-  const [isAtTop, setIsAtTop] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
@@ -13,19 +12,12 @@ export default function Navigation() {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           const scrollingDown = currentScrollY > lastScrollY.current;
-          const atTop = currentScrollY < 100;
 
-          if (atTop) {
-            setIsAtTop(true);
-            setIsVisible(true);
+          if (scrollingDown && currentScrollY > 100) {
+            setIsVisible(false);
+            setMenuOpen(false);
           } else {
-            setIsAtTop(false);
-            if (scrollingDown && currentScrollY > 100) {
-              setIsVisible(false);
-              setMenuOpen(false);
-            } else {
-              setIsVisible(true);
-            }
+            setIsVisible(true);
           }
 
           lastScrollY.current = currentScrollY;
@@ -52,9 +44,13 @@ export default function Navigation() {
   }, [menuOpen]);
 
   const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (id === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
     }
     setMenuOpen(false);
   };
@@ -74,19 +70,13 @@ export default function Navigation() {
           isVisible
             ? 'translate-y-0 opacity-100'
             : '-translate-y-full opacity-0'
-        } ${
-          isAtTop
-            ? 'py-6 bg-transparent'
-            : 'py-4 bg-wall/85 backdrop-blur-lg shadow-sm'
-        }`}
+        } py-4 bg-wall/95 backdrop-blur-lg shadow-sm`}
       >
         <div className="flex items-center justify-between px-12 lg:px-20">
           {/* Logo */}
           <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className={`font-serif text-xl tracking-[0.15em] transition-colors duration-500 ${
-              isAtTop ? 'text-wall' : 'text-charcoal'
-            } hover:text-gold`}
+            onClick={() => scrollTo('top')}
+            className="font-serif text-xl tracking-[0.15em] transition-colors duration-500 text-charcoal hover:text-gold"
           >
             Elena Voss
           </button>
@@ -97,9 +87,7 @@ export default function Navigation() {
               <button
                 key={link.id}
                 onClick={() => scrollTo(link.id)}
-                className={`font-sans text-[11px] uppercase tracking-[0.2em] transition-colors duration-300 ${
-                  isAtTop ? 'text-wall/80 hover:text-gold' : 'text-charcoal/70 hover:text-gold'
-                }`}
+                className="font-sans text-[11px] uppercase tracking-[0.2em] transition-colors duration-300 text-charcoal/70 hover:text-gold"
               >
                 {link.label}
               </button>
@@ -109,9 +97,7 @@ export default function Navigation() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`lg:hidden flex flex-col justify-center gap-1.5 p-2 w-8 h-8 ${
-              isAtTop ? 'text-wall' : 'text-charcoal'
-            }`}
+            className="lg:hidden flex flex-col justify-center gap-1.5 p-2 w-8 h-8 text-charcoal"
           >
             <span
               className={`block h-px bg-current transition-all duration-300 ${

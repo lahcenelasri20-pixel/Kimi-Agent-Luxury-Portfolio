@@ -105,37 +105,8 @@ export default function HeroSection() {
         {/* Left: Artist Info */}
         <div
           ref={contentRef}
-          className="relative z-20 w-full lg:w-[55%] lg:min-h-screen flex flex-col justify-center px-8 lg:px-16 py-20 lg:py-0"
+          className="relative z-20 w-full lg:w-[50%] lg:min-h-screen flex flex-col justify-center px-8 lg:px-16 py-20 lg:py-0"
         >
-          {/* Artist Mark */}
-          <div className="absolute top-8 lg:top-12 left-8 lg:left-16">
-            <span className="font-serif text-xl tracking-[0.05em] text-charcoal/80">
-              Elena Voss
-            </span>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="absolute top-8 lg:top-12 right-8 lg:right-16 flex items-center gap-8">
-            <Link
-              to="/collections/abstract"
-              className="font-sans text-[11px] uppercase tracking-[0.15em] text-charcoal/50 hover:text-gold transition-colors duration-300"
-            >
-              Collections
-            </Link>
-            <Link
-              to="/#about"
-              className="font-sans text-[11px] uppercase tracking-[0.15em] text-charcoal/50 hover:text-gold transition-colors duration-300"
-            >
-              About
-            </Link>
-            <Link
-              to="/#contact"
-              className="font-sans text-[11px] uppercase tracking-[0.15em] text-charcoal/50 hover:text-gold transition-colors duration-300"
-            >
-              Contact
-            </Link>
-          </div>
-
           {/* Main Content */}
           <div className="max-w-2xl">
             {/* Eyebrow */}
@@ -218,9 +189,9 @@ export default function HeroSection() {
         {/* Right: Featured Artwork */}
         <div
           ref={artworkRef}
-          className="hidden lg:flex relative z-10 w-[45%] min-h-screen items-center justify-center pr-8 lg:pr-16"
+          className="hidden lg:flex relative z-10 w-[40%] min-h-screen items-center justify-center pr-8 lg:pr-16"
         >
-          <div className="relative w-full max-w-md">
+          <div className="relative w-full max-w-xs">
             {/* Frame */}
             <div className="absolute -inset-6 border border-charcoal/10" />
             <div className="absolute -inset-12 border border-charcoal/5" />
